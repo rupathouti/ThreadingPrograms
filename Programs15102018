@@ -1,0 +1,502 @@
+#Here in this program both bike and car interfere eachother...since local variables are not shared resources
+       
+from threading import *
+import time
+
+class TestBed:
+    def busyTracks(self):
+        t = current_thread()
+        print("{} Entered Busy Tracks".format(t.name))
+        lap = 0
+        while(lap < 5):
+            if(t.name == "Car"): print("brrrommsss")
+            else: print("vrrrommsss")
+            time.sleep(1)
+            lap += 1
+            print("Lap = {}".format(lap))
+        lap = 0
+        print("{} Leaving Busy Tracks".format(t.name))
+
+
+class Bike(Thread):
+    def __init__(self):
+        Thread.__init__(self,name="Bike")
+
+    def run(self):
+        print("Bike Starts Journey")
+        TestBed().busyTracks()
+        print("Bike Ends Journey")
+
+
+class Car(Thread):
+    def __init__(self):
+        Thread.__init__(self,name="Car")
+
+    def run(self):
+        print("Car Starts Journey")
+        TestBed().busyTracks()
+        print("Car Ends Journey")
+
+Car().start()
+
+Bike().start()
+=========================================================================
+
+#Here we state that static variables are shared resources
+
+from threading import *
+import time
+
+class TestBed:
+    def busyTracks(self):
+        t = current_thread()
+        print("{} Entered Busy Tracks".format(t.name))
+        while(TestBed.lap < 5):
+            if(t.name == "Car"): print("Bhaskar")
+            else: print("Rupa")
+            time.sleep(1)
+            TestBed.lap += 1
+            print("Lap = {}".format(TestBed.lap))
+        TestBed.lap = 0
+        #CLass is also a object so TestBed.lap
+        print("{} Leaving Busy Tracks".format(t.name))
+
+TestBed.lap = 0
+
+class Bike(Thread):
+    def __init__(self):
+        Thread.__init__(self,name="Bike")
+
+    def run(self):
+        print("Bike Starts Journey")
+        TestBed().busyTracks()
+        print("Bike Ends Journey")
+
+
+class Car(Thread):
+    def __init__(self):
+        Thread.__init__(self,name="Car")
+
+    def run(self):
+        print("Car Starts Journey")
+        TestBed().busyTracks()
+        print("Car Ends Journey")
+
+Car().start()
+
+Bike().start()
+
+=================================================================
+
+#Here we are using CONDITION i.e. Monitors in other languages...To solve the problem of shared resources we use condition...In multi threading, only one thread can use the variables at one time, another threads need to wait for the resource to become wakened...Locking of all threads accept one is known as Condition or Monitor...Also we used Acquiring object and releasing the same object...
+
+from threading import *
+import time
+
+lapMoniter = Condition()
+
+
+class TestBed:
+    def busyTracks(self):
+        lapMoniter.acquire()
+        t = current_thread()
+        print("{} Entered Busy Tracks".format(t.name))
+        while(TestBed.lap < 5):
+            if(t.name == "Car"): print("brrrommsss")
+            else: print("vrrrommsss")
+            time.sleep(1)
+            TestBed.lap += 1
+            print("Lap = {}".format(TestBed.lap))
+        TestBed.lap = 0
+        print("{} Leaving Busy Tracks".format(t.name))
+        lapMoniter.release()
+
+TestBed.lap = 0
+
+class Bike(Thread):
+    def __init__(self):
+        Thread.__init__(self,name="Bike")
+
+    def run(self):
+        print("Bike Starts Journey")
+        TestBed().busyTracks()
+        print("Bike Ends Journey")
+
+
+class Car(Thread):
+    def __init__(self):
+        Thread.__init__(self,name="Car")
+
+    def run(self):
+        print("Car Starts Journey")
+        TestBed().busyTracks()
+        print("Car Ends Journey")
+
+Car().start()
+
+Bike().start()
+
+=======================================================================================================
+#Here we used "with lapmonitor"...acquiring can for to write release in big programs so we are using "with" keyword...
+
+from threading import *
+import time
+
+lapMoniter = Condition()
+
+
+class TestBed:
+    def busyTracks(self):
+        with lapMoniter:
+            t = current_thread()
+            print("{} Entered Busy Tracks".format(t.name))
+            while(TestBed.lap < 5):
+                if(t.name == "Car"): print("brrrommsss")
+                else: print("vrrrommsss")
+                time.sleep(1)
+                TestBed.lap += 1
+                print("Lap = {}".format(TestBed.lap))
+            TestBed.lap = 0
+            print("{} Leaving Busy Tracks".format(t.name))
+
+TestBed.lap = 0
+
+class Bike(Thread):
+    def __init__(self):
+        Thread.__init__(self,name="Bike")
+
+    def run(self):
+        print("Bike Starts Journey")
+        TestBed().busyTracks()
+        print("Bike Ends Journey")
+
+
+class Car(Thread):
+    def __init__(self):
+        Thread.__init__(self,name="Car")
+
+    def run(self):
+        print("Car Starts Journey")
+        TestBed().busyTracks()
+        print("Car Ends Journey")
+
+Car().start()
+
+Bike().start()
+
+
+=================================================================================================================
+#One monitor can control the multiple blocks...we cannot define for all functions separately...
+
+from threading import *
+import time
+
+lapMoniter = Condition()
+
+
+class TestBed:
+    def busyTracks(self):
+        with lapMoniter:
+            t = current_thread()
+            print("{} Entered Busy Tracks".format(t.name))
+            while(TestBed.lap < 5):
+                if(t.name == "Car"): print("brrrommsss")
+                else: print("vrrrommsss")
+                time.sleep(1)
+                TestBed.lap += 1
+                print("Lap = {}".format(TestBed.lap))
+            TestBed.lap = 0
+            print("{} Leaving Busy Tracks".format(t.name))
+
+    def busyLanes(self):
+        with lapMoniter:
+            t = current_thread()
+            print("{} Entered Busy Lanes".format(t.name))
+            while(TestBed.lap < 5):
+                if(t.name == "Car"): print("brrrommsss")
+                else: print("vrrrommsss")
+                time.sleep(1)
+                TestBed.lap += 1
+                print("Lap = {}".format(TestBed.lap))
+            TestBed.lap = 0
+            print("{} Leaving Busy Tracks".format(t.name))
+
+
+TestBed.lap = 0
+
+class Bike(Thread):
+    def __init__(self):
+        Thread.__init__(self,name="Bike")
+
+    def run(self):
+        print("Bike Starts Journey")
+        TestBed().busyLanes()
+        print("Bike Ends Journey")
+
+
+class Car(Thread):
+    def __init__(self):
+        Thread.__init__(self,name="Car")
+
+    def run(self):
+        print("Car Starts Journey")
+        TestBed().busyTracks()
+        print("Car Ends Journey")
+
+Car().start()
+
+Bike().start()
+
+==========================================================================================
+#Here no interference between two variables is shown
+from threading import *
+import time
+
+class RacingCircuit:
+
+    def __init__(self):
+        self.lap = 0
+
+    def busyTracks(self):
+        t = current_thread()
+        print("{} Entered Busy Tracks".format(t.name))
+        while(self.lap < 5):
+            if(t.name == "Car"): print("brrrommrrsss")
+            else: print("vrrrommsss")
+            time.sleep(1)
+            self.lap += 1
+            print("Lap = {}".format(self.lap))
+        self.lap = 0
+        print("{} Leaving Busy Tracks".format(t.name))
+
+    def busyLanes(self):
+        t = current_thread()
+        print("{} Entered Busy Lanes".format(t.name))
+        while(self.lap < 5):
+            if(t.name == "Car"): print("brrrommsss")
+            else: print("vrrrommsss")
+            time.sleep(1)
+            self.lap += 1
+            print("Lap = {}".format(self.lap))
+        self.lap = 0
+        print("{} Leaving Busy Tracks".format(t.name))
+
+a = RacingCircuit()
+b = RacingCircuit()
+
+
+class Bike(Thread):
+    def __init__(self):
+        Thread.__init__(self,name="Bike")
+
+    def run(self):
+        print("Bike Starts Journey")
+        global a
+        global b
+        a.busyTracks()
+        a.busyLanes()
+        b.busyLanes()
+        a.busyTracks()
+        print("Bike Ends Journey")
+
+
+class Car(Thread):
+    def __init__(self):
+        Thread.__init__(self,name="Car")
+
+    def run(self): 
+        print("Car Starts Journey")
+        global b
+        global a
+        b.busyLanes()
+        b.busyTracks()
+        b.busyLanes()
+        a.busyTracks()
+        print("Car Ends Journey")
+
+Car().start()
+
+Bike().start()
+
+========================================================================================================
+#Instance monitor...instanciation means object creation and the result of instanciation is called Instance...
+
+from threading import *
+import time
+
+class RacingCircuit:
+
+    def __init__(self):
+        self.lap = 0
+        self.monitor = Condition()
+
+
+    def busyTracks(self):
+        with self.monitor:
+            t = current_thread()
+            print("{} Entered Busy Tracks".format(t.name))
+            while(self.lap < 5):
+                if(t.name == "Car"): print("brrrommsss")
+                else: print("vrrrommsss")
+                time.sleep(1)
+                self.lap += 1
+                print("Lap = {}".format(self.lap))
+            self.lap = 0
+            print("{} Leaving Busy Tracks".format(t.name))
+
+    def busyLanes(self):
+        with self.monitor:
+            t = current_thread()
+            print("{} Entered Busy Lanes".format(t.name))
+            while(self.lap < 5):
+                if(t.name == "Car"): print("brrrommsss")
+                else: print("vrrrommsss")
+                time.sleep(1)
+                self.lap += 1
+                print("Lap = {}".format(self.lap))
+            self.lap = 0
+            print("{} Leaving Busy Tracks".format(t.name))
+
+a = RacingCircuit()
+b = RacingCircuit()
+
+class Bike(Thread):
+    def __init__(self):
+        Thread.__init__(self,name="Bike")
+
+    def run(self):
+        print("Bike Starts Journey")
+        global a
+        global b
+        a.busyTracks()
+        a.busyLanes()
+        b.busyLanes()
+        a.busyTracks()
+        print("Bike Ends Journey")
+
+
+class Car(Thread):
+    def __init__(self):
+        Thread.__init__(self,name="Car")
+
+    def run(self):
+        print("Car Starts Journey")
+        global b
+        global a
+        b.busyLanes()
+        b.busyTracks()
+        b.busyLanes()
+        a.busyTracks()
+        print("Car Ends Journey")
+
+
+Car().start()
+
+Bike().start()
+
+==============================================================================================
+#Showing the threads in the in the program
+import thread
+import time
+
+def Work(name,delay):
+   count = 0;
+   while count < 5:
+       time.sleep(delay)
+       count += 1
+       print("{} {}".format(name,count))
+
+def Main():
+   i = 0
+   while i < 10:
+       print("Loop 1")
+       i += 1;
+   thread.start_new_thread(Work,("Jagrat",0.5))
+   thread.start_new_thread(Work,("Amit",0.2))
+   i = 0
+   while i < 10:
+       print("Loop 2")
+       time.sleep(0.2)
+       i += 1;
+
+Main()
+time.sleep(5)
+
+====================================================================================================
+
+# Parameters taking directly
+import thread;
+import threading;
+import time;
+
+class Thread1 (threading.Thread):
+   def __init__(self,name,delay):
+       threading.Thread.__init__(self);
+       self.name = name;
+       self.delay = delay;
+
+   def run(self):
+       count = 0;
+       while count < 5:
+           time.sleep(self.delay);
+           count += 1;
+           print("{} {}".format(self.name,count));
+
+def Main():
+   print("Entering Main")
+   i = 0
+   while i < 10:
+       print("Loop 1")
+       i += 1
+   t1 = Thread1("Amit",0.6)
+   t1.start();  # no waiting in flow of control is known as asynchronous call, thread gets started
+   i = 0
+   while i < 10:
+       print("Main")
+       time.sleep(0.5)
+       i += 1
+   print("Leaving Main")
+
+Main()
+
+==================================================================================================
+#Defining the function and calling it in run...
+import thread;
+import threading;
+import time;
+
+def Work(name,delay):
+   count = 0;
+   while count < 5:
+       time.sleep(delay);
+       count += 1;
+       print("{} {}".format(name,count));
+
+
+class Thread1 (threading.Thread):
+   def __init__(self,name,delay):
+       threading.Thread.__init__(self);
+       self.name = name;
+       self.delay = delay;
+
+   def run(self):
+       Work(self.name,self.delay)
+
+def Main():
+   print("Entering Main")
+   i = 0
+   while i < 10:
+       print("Loop 1")
+       i += 1
+   t1 = Thread1("Amit",0.6)
+   t1.start();
+   thread.start_new_thread(Work,("Rahul",0.5))
+   thread.start_new_thread(Work,("Jagrat",0.2))  
+   i = 0
+   while i < 10:
+       print("Main")
+       time.sleep(0.5)
+       i += 1
+   print("Leaving Main")
+
+Main()
